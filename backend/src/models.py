@@ -92,6 +92,20 @@ class Distribution(Base):
     purpose:Mapped[str]=mapped_column(String(300))
     state:Mapped[str]=mapped_column(String(20),default='requested')
     reserve_snapshot:Mapped[dict|None]=mapped_column(JSON,nullable=True)
+class Receipt(Base):
+    __tablename__='receipts'
+    id:Mapped[int]=mapped_column(primary_key=True)
+    code:Mapped[str]=mapped_column(String(60),unique=True)
+    bag_code:Mapped[str]=mapped_column(String(60),unique=True)
+    crop:Mapped[str]=mapped_column(String(40))
+    name:Mapped[str]=mapped_column(String(100))
+    origin:Mapped[str]=mapped_column(String(100))
+    seeds:Mapped[int]=mapped_column(Integer)
+    state:Mapped[str]=mapped_column(String(20),default='pending')
+    snapshot:Mapped[int]=mapped_column(Integer)
+    accession_id:Mapped[int|None]=mapped_column(ForeignKey('accessions.id'),nullable=True)
+    lot_id:Mapped[int|None]=mapped_column(ForeignKey('lots.id'),nullable=True)
+    recheck:Mapped[dict|None]=mapped_column(JSON,nullable=True)
 class Audit(Base):
     __tablename__='audits'
     id:Mapped[int]=mapped_column(primary_key=True)

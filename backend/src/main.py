@@ -10,7 +10,7 @@ from .models import *
 from .schemas import *
 from .auth import current,writer,supervisor,verify,token
 from .common import pack,lock,add,audit
-from . import renewal_service as renewal,isolation_service as isolation,harvest_service as harvest,sharing_service as sharing
+from . import renewal_service as renewal,isolation_service as isolation,harvest_service as harvest,sharing_service as sharing,receipt_service as intake
 from .middleware import Trace,Burst
 queue=redis.Redis.from_url(os.environ['REDIS_URL'],decode_responses=True)
 @asynccontextmanager
@@ -31,7 +31,7 @@ def login(d:Login,s=Depends(session)):
 def me(u=Depends(current)):return {'email':u.email,'role':u.role}
 @app.get('/archive')
 def archive(s=Depends(session),u=Depends(current)):
-    return {cls.__tablename__:[pack(x)for x in s.scalars(select(cls).order_by(cls.id))]for cls in (Accession,Lot,GerminationTest,Regeneration,Plot,Flowering,Pollination,Harvest,Distribution)}
+    return {cls.__tablename__:[pack(x)for x in s.scalars(select(cls).order_by(cls.id))]for cls in (Accession,Lot,GerminationTest,Regeneration,Plot,Flowering,Pollination,Harvest,Distribution,Receipt)}
 @app.get('/audits')
 def audits(s=Depends(session),u=Depends(current)):return [pack(x)for x in s.scalars(select(Audit).order_by(Audit.id.desc()).limit(50))]
 @app.post('/accessions')
@@ -103,3 +103,11 @@ def approve(id:int,s=Depends(session),u=Depends(supervisor)):
 @app.post('/distributions/{id}/receive')
 def receive(id:int,s=Depends(session),u=Depends(writer)):
     x=sharing.receive(s,id,u);s.commit();return x
+@app.post('/receipts')
+def receipt_register(d:ReceiptInput,s=Depends(session),u=Depends(writer)):
+    x=intake.register(s,d,u);s.commit();return x
+@app.get('/receipts/recommendations')
+def receipt_recommendations(s=Depends(session),u=Depends(current)):return intake.recommendations(s)
+@app.post('/receipts/{id}/judge')
+def receipt_judge(id:int,d:JudgeInput,s=Depends(session),u=Depends(supervisor)):
+    x=intake.judge(s,id,d,u);s.commit();return x

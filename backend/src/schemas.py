@@ -59,3 +59,15 @@ class DistributionInput(BaseModel):
     recipient:str=Field(min_length=2,max_length=100)
     seeds:int=Field(ge=1,le=10000)
     purpose:str=Field(min_length=5,max_length=300)
+class ReceiptInput(BaseModel):
+    code:str=Field(min_length=3,max_length=60)
+    bag_code:str=Field(min_length=3,max_length=60)
+    crop:str=Field(min_length=2,max_length=40)
+    name:str=Field(min_length=2,max_length=100)
+    origin:str=Field(min_length=2,max_length=100)
+    seeds:int=Field(ge=1,le=1000000)
+class JudgeInput(BaseModel):
+    verdict:str=Field(pattern='^(homologous|heterologous)$')
+    accession_id:int|None=None
+    new_code:str|None=Field(default=None,min_length=3,max_length=40,pattern=r'\S')
+    minimum:int=Field(default=300,ge=100,le=10000)
